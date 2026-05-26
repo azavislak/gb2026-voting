@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>People's Choice Awards</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --snow: #F5F7FA;
+      --charcoal: #1A1C20;
+      --slate: #2E3240;
+      --muted: #6B7280;
+      --accent: #E8420A;
+      --accent-light: #FFF0EB;
+      --border: #E2E5EA;
+      --success: #16A34A;
+      --success-light: #F0FDF4;
+      --card-bg: #FFFFFF;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--snow);
+      color: var(--charcoal);
+      min-height: 100vh;
+    }
+
+    .header {
+      background: var(--charcoal);
+      color: white;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      border-bottom: 3px solid var(--accent);
+    }
+    .header-eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 0.4rem;
+    }
+    .header h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.2rem, 8vw, 3.5rem);
+      letter-spacing: 0.03em;
+      line-height: 1;
+    }
+    .header-sub {
+      font-size: 13px;
+      color: rgba(255,255,255,0.55);
+      margin-top: 0.4rem;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 4rem;
+    }
+
+    .section-label {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+      margin-top: 1.75rem;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .tab {
+      padding: 6px 14px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      background: white;
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.15s;
+    }
+    .tab:hover { border-color: var(--accent); color: var(--accent); }
+    .tab.active {
+      background: var(--charcoal);
+      border-color: var(--charcoal);
+      color: white;
+    }
+
+    .board-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 8px;
+    }
+
+    .board-card {
+      background: white;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 0.5rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+    .board-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+    .board-card.selected {
+      border-color: var(--accent);
+      border-width: 2px;
+      background: var(--accent-light);
+    }
+    .board-card.selected .check { opacity: 1; }
+
+
+    .board-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      color: var(--charcoal);
+      line-height: 1;
+    }
+    .board-card.selected .board-number { color: var(--accent); }
+
+    .board-name {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 3px;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .board-type {
+      font-size: 10px;
+      color: #9CA3AF;
+      margin-top: 2px;
+    }
+
+    .check {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      background: var(--accent);
+      border-radius: 50%;
+      margin-bottom: 3px;
+      opacity: 0;
+      transition: opacity 0.15s;
+      position: relative;
+    }
+    .check::after {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 2px;
+      width: 5px;
+      height: 8px;
+      border: 2px solid white;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+    }
+
+    .selection-bar {
+      background: var(--charcoal);
+      color: white;
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-top: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .selection-bar .label { font-size: 12px; color: rgba(255,255,255,0.5); }
+    .selection-bar .value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.3rem;
+      letter-spacing: 0.03em;
+    }
+    .selection-bar .value span { color: var(--accent); }
+
+    .btn-submit {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-submit:hover { background: #c73608; }
+    .btn-submit:active { transform: scale(0.99); }
+    .btn-submit:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+
+    .status {
+      margin-top: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 13px;
+      display: none;
+    }
+    .status.error {
+      background: #FEF2F2;
+      color: #B91C1C;
+      border: 1px solid #FECACA;
+      display: block;
+    }
+
+    .results-count {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .success-screen {
+      display: none;
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+    .success-screen.visible { display: block; }
+    .success-icon {
+      width: 72px; height: 72px;
+      background: var(--success);
+      border-radius: 50%;
+      margin: 0 auto 1.5rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .success-icon svg { width: 36px; height: 36px; stroke: white; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .success-screen h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.5rem;
+      letter-spacing: 0.03em;
+    }
+    .success-screen p { color: var(--muted); margin-top: 0.5rem; font-size: 15px; }
+    .success-board {
+      background: var(--charcoal);
+      color: white;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem auto;
+      max-width: 280px;
+      font-size: 13px;
+    }
+    .success-board-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .dupe-screen {
+      display: none;
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+    .dupe-screen.visible { display: block; }
+    .dupe-icon {
+      width: 72px; height: 72px;
+      background: #DC2626;
+      border-radius: 50%;
+      margin: 0 auto 1.5rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .dupe-icon svg { width: 36px; height: 36px; stroke: white; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .dupe-screen h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 0.03em; }
+    .dupe-screen p { color: var(--muted); margin-top: 0.5rem; }
+
+    .loading-overlay {
+      position: fixed; inset: 0;
+      background: rgba(26,28,32,0.7);
+      display: none; align-items: center; justify-content: center; z-index: 100;
+    }
+    .loading-overlay.visible { display: flex; }
+    .spinner {
+      width: 48px; height: 48px;
+      border: 4px solid rgba(255,255,255,0.2);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">Cast your vote</div>
+  <h1>People's Choice<br>Awards</h1>
+  <div class="header-sub" id="event-name">Grand Board Showcase 2026</div>
+</div>
+
+<div class="container">
+  <div id="vote-form">
+    <div class="section-label">Filter by category</div>
+    <div class="tabs" id="category-tabs"></div>
+
+    <div class="section-label">Choose your favorite board</div>
+    <div class="results-count" id="results-count"></div>
+    <div class="board-grid" id="board-grid"></div>
+
+    <div class="selection-bar" id="selection-bar" style="display:none;">
+      <div>
+        <div class="label">Your selection</div>
+        <div class="value" id="selection-display">—</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="label">Category</div>
+        <div class="value" id="category-display" style="color:rgba(255,255,255,0.7);font-size:1rem;">—</div>
+      </div>
+    </div>
+
+    <button class="btn-submit" id="submit-btn" disabled onclick="submitVote()">Cast My Vote</button>
+    <div class="status" id="status-msg"></div>
+  </div>
+
+  <div class="success-screen" id="success-screen">
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    </div>
+    <h2>Vote recorded!</h2>
+    <p>Thanks for participating in the People's Choice Awards.</p>
+    <div class="success-board">
+      <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px;">You voted for</div>
+      <div class="success-board-num" id="success-board-num">—</div>
+      <div id="success-board-name" style="font-size:13px;margin-top:4px;">—</div>
+    </div>
+    <p style="font-size:13px;">Results will be announced at the end of the event.</p>
+  </div>
+
+  <div class="dupe-screen" id="dupe-screen">
+    <div class="dupe-icon">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </div>
+    <h2>Already voted</h2>
+    <p>Only one vote per person is allowed.<br>Your vote has already been recorded.</p>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+</div>
+
+<script>
+  const BOARDS = [
+    { id: "B001", number: "1",   name: "Peyton Schmitt",                        category: "Paddleboard" },
+    { id: "B002", number: "2",   name: "Brandon Armour",                        category: "Surfboard" },
+    { id: "B003", number: "3",   name: "Tegan Kitchen",                         category: "Snowboard" },
+    { id: "B004", number: "4",   name: "Tegan Kitchen",                         category: "Surfboard" },
+    { id: "B005", number: "5",   name: "Ruthie Bray",                           category: "Snowboard" },
+    { id: "B006", number: "6",   name: "Ruthie Bray",                           category: "Longboard" },
+    { id: "B007", number: "7",   name: "Sasha Kassouni",                        category: "Surfboard" },
+    { id: "B008", number: "8",   name: "Sasha Kassouni",                        category: "Longboard" },
+    { id: "B009", number: "9",   name: "Delaney Reynhout",                      category: "Longboard" },
+    { id: "B010", number: "10",  name: "Delaney Reynhout",                      category: "Surfboard" },
+    { id: "B011", number: "11",  name: "Sarah Stokes",                          category: "Skateboard" },
+    { id: "B012", number: "12",  name: "Claire Kinsman",                        category: "Snowboard" },
+    { id: "B013", number: "13",  name: "Claire Kinsman",                        category: "Skateboard" },
+    { id: "B014", number: "14",  name: "Claire Kinsman",                        category: "Other" },
+    { id: "B015", number: "15",  name: "Jackson Korhorn",                       category: "Skateboard" },
+    { id: "B016", number: "16",  name: "Peyton Schmitt",                        category: "Longboard" },
+    { id: "B017", number: "17",  name: "Sarah Stokes",                          category: "Skateboard" },
+    { id: "B018", number: "18",  name: "Abby Slade",                            category: "Longboard" },
+    { id: "B019", number: "19",  name: "Harper Klassen",                        category: "Surfboard" },
+    { id: "B020", number: "20",  name: "Harper Klassen",                        category: "Surfboard" },
+    { id: "B021", number: "21",  name: "Harper Klassen",                        category: "Other" },
+    { id: "B022", number: "22",  name: "Anna Ekdahl",                           category: "Skis" },
+    { id: "B023", number: "23",  name: "Anna Ekdahl",                           category: "Surfboard" },
+    { id: "B024", number: "24",  name: "Addison Prevette",                      category: "Surfboard" },
+    { id: "B025", number: "25",  name: "Brandon Armour",                        category: "Longboard" },
+    { id: "B026", number: "26",  name: "Lauren Jacobs",                         category: "Paddleboard" },
+    { id: "B027", number: "27",  name: "John Kochaney",                         category: "Snowboard" },
+    { id: "B028", number: "28",  name: "Reese Stolz",                           category: "Snowboard" },
+    { id: "B029", number: "29",  name: "Reese Stolz",                           category: "Paddleboard" },
+    { id: "B030", number: "30",  name: "Sasha Kassouni",                        category: "Surfboard" },
+    { id: "B031", number: "31",  name: "John Truong",                           category: "Longboard" },
+    { id: "B032", number: "32",  name: "John Truong",                           category: "Snowboard" },
+    { id: "B033", number: "33",  name: "Tessa Reed",                            category: "Surfboard" },
+    { id: "B034", number: "34",  name: "William Vanden Berg",                   category: "Snowboard" },
+    { id: "B035", number: "35",  name: "Megan Afman",                           category: "Wakesurf" },
+    { id: "B036", number: "36",  name: "Lauryn DeBoer",                         category: "Wakesurf" },
+    { id: "B037", number: "37",  name: "Ajak Gieu",                             category: "Snowboard" },
+    { id: "B038", number: "38",  name: "Carl Thompson",                         category: "Snowboard" },
+    { id: "B039", number: "39",  name: "Lila Jabara",                           category: "Paddleboard" },
+    { id: "B040", number: "40",  name: "Tyler Buursma",                         category: "Wakesurf" },
+    { id: "B041", number: "41",  name: "Drew Bierlein",                         category: "Wakesurf" },
+    { id: "B042", number: "42",  name: "Mariella Marr",                         category: "Skateboard" },
+    { id: "B043", number: "43",  name: "Mariella Marr",                         category: "Snowboard" },
+    { id: "B044", number: "44",  name: "Elise Hoekzema",                        category: "Paddleboard" },
+    { id: "B045", number: "45",  name: "Adrian Selfe",                          category: "Wakesurf" },
+    { id: "B046", number: "46",  name: "Camden Avery",                          category: "Longboard" },
+    { id: "B047", number: "47",  name: "Will Doezema",                          category: "Wakesurf" },
+    { id: "B048", number: "48",  name: "Katherine Brandt",                      category: "Paddleboard" },
+    { id: "B049", number: "49",  name: "Addison Jung",                          category: "Wakesurf" },
+    { id: "B050", number: "50",  name: "Maren Leech",                           category: "Surfboard" },
+    { id: "B051", number: "51",  name: "Maren Leech",                           category: "Longboard" },
+    { id: "B052", number: "52",  name: "Cora Visser",                           category: "Longboard" },
+    { id: "B053", number: "53",  name: "Cora Visser",                           category: "Snowboard" },
+    { id: "B054", number: "54",  name: "Dyllan Anderson",                       category: "Paddleboard" },
+    { id: "B055", number: "55",  name: "Sammy Rauwerda",                        category: "Snowboard" },
+    { id: "B056", number: "56",  name: "Sammy Rauwerda",                        category: "Wakesurf" },
+    { id: "B057", number: "57",  name: "Cohen Koops",                           category: "Surfboard" },
+    { id: "B058", number: "58",  name: "Cohen Koops",                           category: "Skateboard" },
+    { id: "B059", number: "59",  name: "Ava Leder",                             category: "Paddleboard" },
+    { id: "B060", number: "60",  name: "Leo Chen",                              category: "Longboard" },
+    { id: "B061", number: "61",  name: "Cora Kaiser",                           category: "Longboard" },
+    { id: "B062", number: "62",  name: "Kortney Jennings & Rayna Lobbezoo",     category: "Snowboard" },
+    { id: "B063", number: "63",  name: "Kortney Jennings",                      category: "Longboard" },
+    { id: "B064", number: "64",  name: "Casey Ouderkirk",                       category: "Skateboard" },
+    { id: "B065", number: "65",  name: "Beckem Fournier",                       category: "Longboard" },
+    { id: "B066", number: "66",  name: "Kohn, Brougham & Ward",                 category: "Paddleboard" },
+    { id: "B067", number: "67",  name: "Blake Hitsman",                         category: "Longboard" },
+    { id: "B068", number: "68",  name: "Dennis Stark",                          category: "Longboard" },
+    { id: "B069", number: "69",  name: "Lilliana Bragagnini",                   category: "Skateboard" },
+    { id: "B070", number: "70",  name: "",  category: "TBD" },
+    { id: "B071", number: "71",  name: "",  category: "TBD" },
+    { id: "B072", number: "72",  name: "",  category: "TBD" },
+    { id: "B073", number: "73",  name: "",  category: "TBD" },
+    { id: "B074", number: "74",  name: "",  category: "TBD" },
+    { id: "B075", number: "75",  name: "",  category: "TBD" },
+    { id: "B076", number: "76",  name: "",  category: "TBD" },
+    { id: "B077", number: "77",  name: "",  category: "TBD" },
+    { id: "B078", number: "78",  name: "",  category: "TBD" },
+    { id: "B079", number: "79",  name: "",  category: "TBD" },
+    { id: "B080", number: "80",  name: "",  category: "TBD" },
+    { id: "B081", number: "81",  name: "",  category: "TBD" },
+    { id: "B082", number: "82",  name: "",  category: "TBD" },
+    { id: "B083", number: "83",  name: "",  category: "TBD" },
+    { id: "B084", number: "84",  name: "",  category: "TBD" },
+    { id: "B085", number: "85",  name: "",  category: "TBD" },
+    { id: "B086", number: "86",  name: "",  category: "TBD" },
+    { id: "B087", number: "87",  name: "",  category: "TBD" },
+    { id: "B088", number: "88",  name: "",  category: "TBD" },
+    { id: "B089", number: "89",  name: "",  category: "TBD" },
+    { id: "B090", number: "90",  name: "",  category: "TBD" },
+    { id: "B091", number: "91",  name: "",  category: "TBD" },
+    { id: "B092", number: "92",  name: "",  category: "TBD" },
+    { id: "B093", number: "93",  name: "",  category: "TBD" },
+    { id: "B094", number: "94",  name: "",  category: "TBD" },
+    { id: "B095", number: "95",  name: "",  category: "TBD" },
+    { id: "B096", number: "96",  name: "",  category: "TBD" },
+    { id: "B097", number: "97",  name: "",  category: "TBD" },
+    { id: "B098", number: "98",  name: "",  category: "TBD" },
+    { id: "B099", number: "99",  name: "",  category: "TBD" },
+    { id: "B100", number: "100", name: "",  category: "TBD" },
+    { id: "B101", number: "101", name: "",  category: "TBD" },
+    { id: "B102", number: "102", name: "",  category: "TBD" },
+    { id: "B103", number: "103", name: "",  category: "TBD" },
+    { id: "B104", number: "104", name: "",  category: "TBD" },
+    { id: "B105", number: "105", name: "",  category: "TBD" },
+    { id: "B106", number: "106", name: "",  category: "TBD" },
+    { id: "B107", number: "107", name: "",  category: "TBD" },
+    { id: "B108", number: "108", name: "",  category: "TBD" },
+    { id: "B109", number: "109", name: "",  category: "TBD" },
+    { id: "B110", number: "110", name: "",  category: "TBD" },
+    { id: "B111", number: "111", name: "",  category: "TBD" },
+    { id: "B112", number: "112", name: "",  category: "TBD" },
+    { id: "B113", number: "113", name: "",  category: "TBD" },
+    { id: "B114", number: "114", name: "",  category: "TBD" },
+    { id: "B115", number: "115", name: "",  category: "TBD" },
+    { id: "B116", number: "116", name: "",  category: "TBD" },
+    { id: "B117", number: "117", name: "",  category: "TBD" },
+    { id: "B118", number: "118", name: "",  category: "TBD" },
+    { id: "B119", number: "119", name: "",  category: "TBD" },
+    { id: "B120", number: "120", name: "",  category: "TBD" },
+    { id: "B121", number: "121", name: "",  category: "TBD" },
+    { id: "B122", number: "122", name: "",  category: "TBD" },
+    { id: "B123", number: "123", name: "",  category: "TBD" },
+    { id: "B124", number: "124", name: "",  category: "TBD" },
+    { id: "B125", number: "125", name: "",  category: "TBD" },
+    { id: "B126", number: "126", name: "",  category: "TBD" },
+    { id: "B127", number: "127", name: "",  category: "TBD" },
+    { id: "B128", number: "128", name: "",  category: "TBD" },
+    { id: "B129", number: "129", name: "",  category: "TBD" },
+    { id: "B130", number: "130", name: "",  category: "TBD" },
+    { id: "B131", number: "131", name: "",  category: "TBD" },
+    { id: "B132", number: "132", name: "",  category: "TBD" },
+  ];
+
+  let selectedBoard = null;
+  let activeCategory = "All";
+  let voterIP = null;
+
+  const params = new URLSearchParams(window.location.search);
+  const preselect = params.get("board");
+
+  // Try to get real IP, but don't block page load if it fails (e.g. VPN blocking ipify)
+  const ipTimeout = new Promise(resolve => setTimeout(() => resolve({ ip: null }), 3000));
+  Promise.race([
+    fetch("https://api.ipify.org?format=json").then(r => r.json()).catch(() => ({ ip: null })),
+    ipTimeout
+  ]).then(d => {
+    voterIP = d.ip || ("fallback-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7));
+  });
+
+  const categories = ["All", ...new Set(
+    BOARDS.filter(b => b.category !== "TBD").map(b => b.category)
+  )];
+  const tabsEl = document.getElementById("category-tabs");
+  categories.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = "tab" + (cat === "All" ? " active" : "");
+    btn.textContent = cat;
+    btn.onclick = () => filterCategory(cat);
+    tabsEl.appendChild(btn);
+  });
+
+  renderBoards("All");
+
+  function renderBoards(category) {
+    const grid = document.getElementById("board-grid");
+    grid.innerHTML = "";
+    const filtered = category === "All" ? BOARDS : BOARDS.filter(b => b.category === category);
+    document.getElementById("results-count").textContent = `${filtered.length} boards`;
+
+    filtered.forEach(board => {
+      const isTBD = board.category === "TBD";
+      const card = document.createElement("div");
+      card.className = "board-card" + (selectedBoard?.id === board.id ? " selected" : "");
+      card.id = "card-" + board.id;
+      card.innerHTML = `
+        <div class="check"></div>
+        <div class="board-number">${board.number}</div>
+        <div class="board-name">${isTBD ? "" : board.name}</div>
+        <div class="board-type">${isTBD ? "" : board.category}</div>
+      `;
+      card.onclick = () => selectBoard(board);
+      grid.appendChild(card);
+    });
+
+    if (preselect && !selectedBoard) {
+      const match = BOARDS.find(b => b.id === preselect && b.category !== "TBD");
+      if (match) selectBoard(match);
+    }
+  }
+
+  function filterCategory(cat) {
+    activeCategory = cat;
+    document.querySelectorAll(".tab").forEach(t => {
+      t.classList.toggle("active", t.textContent === cat);
+    });
+    renderBoards(cat);
+  }
+
+  function selectBoard(board) {
+    selectedBoard = board;
+    document.querySelectorAll(".board-card").forEach(c => c.classList.remove("selected"));
+    const card = document.getElementById("card-" + board.id);
+    if (card) card.classList.add("selected");
+    document.getElementById("selection-bar").style.display = "flex";
+    const isTBD = board.category === "TBD";
+    document.getElementById("selection-display").innerHTML = isTBD
+      ? `Board <span>#${board.number}</span>`
+      : `Board <span>#${board.number}</span> — ${board.name}`;
+    document.getElementById("category-display").textContent = isTBD ? "" : board.category;
+    document.getElementById("submit-btn").disabled = false;
+  }
+
+  // Paste your Web App URL here (Deploy > Manage deployments > copy the URL)
+  const WEB_APP_URL = "YOUR_WEB_APP_URL_HERE";
+
+  function submitVote() {
+    if (!selectedBoard) return;
+    document.getElementById("loading-overlay").classList.add("visible");
+    document.getElementById("submit-btn").disabled = true;
+    const payload = {
+      boardId: selectedBoard.id,
+      boardNumber: selectedBoard.number,
+      boardName: selectedBoard.name,
+      category: selectedBoard.category,
+      ip: voterIP || "unknown",
+      timestamp: new Date().toISOString()
+    };
+    fetch(WEB_APP_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(handleResponse)
+    .catch(handleError);
+  }
+
+  function handleResponse(result) {
+    document.getElementById("loading-overlay").classList.remove("visible");
+    if (result.status === "duplicate") {
+      document.getElementById("vote-form").style.display = "none";
+      document.getElementById("dupe-screen").classList.add("visible");
+    } else if (result.status === "ok") {
+      document.getElementById("vote-form").style.display = "none";
+      document.getElementById("success-board-num").textContent = "#" + selectedBoard.number;
+      document.getElementById("success-board-name").textContent = selectedBoard.name + " — " + selectedBoard.category;
+      document.getElementById("success-screen").classList.add("visible");
+    } else {
+      showError("Something went wrong. Please try again.");
+      document.getElementById("submit-btn").disabled = false;
+    }
+  }
+
+  function handleError() {
+    document.getElementById("loading-overlay").classList.remove("visible");
+    showError("Connection error. Please try again.");
+    document.getElementById("submit-btn").disabled = false;
+  }
+
+  function showError(msg) {
+    const el = document.getElementById("status-msg");
+    el.textContent = msg;
+    el.className = "status error";
+  }
+</script>
+</body>
+</html>
